@@ -135,3 +135,6 @@ childrenHappiness <- dat %>% select(Religion, Children) %>%
 ggplot(childrenHappiness, aes(x=Religion, y=Children)) + geom_boxplot() + theme(axis.text.x=element_text(angle=90))+ ggtitle("#Children vs Religoin")
 ```
 The above graph shows that there is some differences with Catholics, Protestants, and Jewish respondents had the highest average and the middle chunk of religions, Christian, Inter-nondenominational, Hinduism, Buddhism and Orthodox-christian all were relatively the same. Protestant was the only, large religion, that had the range from the first quartile to third quartile not resting on 0 for number of children.
+
+
+##Analysis: This lab was really well done by colin 
