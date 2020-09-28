@@ -11,5 +11,75 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+data <- read_xls(path = "C:/Users/Adam Brandt/OneDrive/Documents/DS202/ds202_lab3/GSS.xls")
 ```
+
+1.
+
+```{r}
+by_party <- select(data, `Political party affiliation`, `Highest year of school completed`)
+by_party$`Highest year of school completed` <- as.numeric(as.character(by_party$`Highest year of school completed`))
+group_by(by_party, `Political party affiliation`) %>%
+summarise(mean_years = mean(`Highest year of school completed`, na.rm = TRUE))
+```
+
+The least educated people have no political affiliation and republicans have more average years of education.
+
+2.
+```{r}
+data$`Highest year of school completed` <- as.numeric(as.character(data$`Highest year of school completed`))
+data %>%
+  group_by(`Political party affiliation`) %>%
+  filter(`Highest year of school completed` > median(`Highest year of school completed`, na.rm = TRUE))
+```
+
+
+3.
+```{r}
+by_marriage <- select(data, 'General happiness', 'Marital status', 'Political party affiliation')
+by_marriage <- filter(by_marriage, by_marriage$'General happiness' == 'Very happy' | by_marriage$'General happiness' == 'Pretty happy' | by_marriage$'General happiness' == 'Not too happy') 
+ggplot(by_marriage, aes(by_marriage$'Marital status', fill = by_marriage$'General happiness' ))+ geom_bar(position = "dodge")
+```
+
+Of the people that are married, most of them responded that they were happy. However, there were a lot of happy people among the other groups too, but they had higher numbers of unhappy people relative to the married people.
+
+
+4.
+```{r}
+ggplot(by_marriage, aes(by_marriage$'Marital status', fill = by_marriage$'General happiness' ))+ geom_bar(position = "dodge") + facet_wrap(~by_marriage$'Political party affiliation')
+```
+
+There does not seem to be a relationship between party affiliation and marital status.
+
+5.
+```{r}
+by_edu <- select(data, `Marital status`, `Highest year of school completed`) %>%
+          filter(`Highest year of school completed` != "No answer" & `Highest year of school completed` != "Don't know" & `Marital status` != "No answer")
+by_edu$`Highest year of school completed` <- as.numeric(as.character(by_edu$`Highest year of school completed`))
+by_edu <- aggregate(by_edu$'Highest year of school completed', list(by_edu$'Marital status'), FUN = mean)
+by_edu
+ggplot(by_edu, aes(x= Group.1, y=x)) + geom_bar(stat = "identity")
+```
+
+There seems to be more people who are married that have a higher years of education, but there is very little correlation.
+
+6.
+```{r}
+by_religion <- select(data, 'Religion in which raised', 'Political party affiliation')
+by_religion <- filter(by_religion, by_religion$'Religion in which raised' != "Not applicable")
+ggplot(by_religion, aes(by_religion$'Religion in which raised', fill = by_religion$'Political party affiliation' ))+ geom_bar(position = "dodge")
+```
+
+I compared the religion of the respondents with their political party affiliation and found that there was no correlation between the two.
+
+```{r}
+by_employed <- select(data, `R self-emp or works for somebody`, `Political party affiliation`) %>%
+  filter(`R self-emp or works for somebody` != "No answer" & `R self-emp or works for somebody` != "Don't Know")
+ggplot(by_employed, aes(by_employed$`R self-emp or works for somebody`, fill = by_employed$`Political party affiliation` ))+ geom_bar(position = "dodge")
+```
+
+I compared whether or not you work for somebody else or you work for yourself and your political party affiliation and found that democrats are more likely to work for someone else.

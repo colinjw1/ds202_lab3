@@ -1,12 +1,326 @@
 ---
 title: "Team"
-author: "Colin Willenborg"
+author: "Colin Willenborg, Allan Juarez, Adam Brandt"
 date: "9/23/2020"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+data <- readxl::read_xls('./GSS.xls')
+dat <- readxl::read_xls('./GSS.xls')
+dat <- dat %>%
+  rename(
+    Year = 'Gss year for this respondent',
+    Happiness = 'General happiness',
+    Religion = 'Religion in which raised',
+    Political.Party = 'Political party affiliation',
+    Sex = 'Respondents sex',
+    Degree = 'Rs highest degree',
+    Year.School = 'Highest year of school completed',
+    Children = 'Number of children',
+    Marital.Status = 'Marital status',
+    Self.Emp = 'R self-emp or works for somebody',
+    ID = 'Respondent id number',
+    Ballot = 'Ballot used for interview'
+  )
+dat$Children <- as.numeric(dat$Children)
+dat$Year.School <- as.numeric(dat$Year.School)
+```
+
+## Question 1
+### Allan 
+```{r}
+education <- dat[c('Political.Party','Year.School')]  
+
+education <- filter(education, education$'Year.School' != 'No answer')
+education <- filter(education, education$'Year.School' != "Don't know")
+education$'Year.School' <- as.numeric(education$'Year.School')
+
+education <- aggregate(education$'Year.School',list(education$'Political.Party'), FUN = mean)
+education <- education %>% rename(party = Group.1, years = x)
+ 
+ggplot(education, aes(x=party, y=years)) + geom_bar(stat = "identity")+coord_flip()
+```
+
+1. Looking at the average years of school for every party. YOu can see that there are about three types of the two parties. Strong, Not Str, INd, in every category republicans average more years of school than democrats. The lowest average of years in school tended to not know their affiliation.
+
+### Colin
+```{r}
+education <- select(dat, Year.School, Political.Party)
+p <- ggplot(education, aes(x=Political.Party, y=Year.School, fill=Political.Party)) + geom_boxplot() + ggtitle("Education vs Political Party")
+p + theme(axis.text.x=element_text(angle=90))
+```
+
+The above graph splits the respondents into groups based on Political Party and then shows a boxplot representation for the individual parties. People who identify as independent near democrat/republican on average have higher education than normal independent. The not strong republican and strong republican have a greater average education than the counter parts of not strong democrat and strong democrat. It is also interesting to note that a respondent identifying with a political party has a higher average education level than respondents with no education which could mean that the less educated you are the less you participate in politics.
+
+## Question 2
+### Allan 
+```{r}
+second <-dat
+
+education <- dat[c('Political.Party','Year.School')] 
+education <- filter(education, education$'Year.School' != 'No answer')
+education <- filter(education, education$'Year.School' != "Don't know")
+education$'Year.School' <- as.numeric(education$'Year.School') 
+education <- aggregate(education$'Year.School',list(education$'Political.Party'), FUN = median)
+education
+second <- filter(second, second$'Year.School' != 'No answer')
+second <- filter(second, second$'Year.School' != "Don't know")
+
+second$'Year.School' <- as.numeric(second$'Year.School')
+strongRep <- filter(second,second$'Political.Party' == 'Strong republican' & second$'Year.School' >13)
+
+strongDem <- filter(second,second$'Political.Party' == 'Strong democrat' & second$'Year.School' >12)
+
+other <- filter(second,second$'Political.Party' == 'Other party' & second$'Year.School' >13)
+
+notStrRep <- filter(second,second$'Political.Party' == 'Not str republican' & second$'Year.School' >13)
+
+notStrDem <- filter(second,second$'Political.Party' == 'Not str democrat' & second$'Year.School' >12)
+
+no <- filter(second,second$'Political.Party' == 'No answer' & second$'Year.School' >12)
+
+independent <- filter(second,second$'Political.Party' == 'Independent' & second$'Year.School' >12)
+inrep <- filter(second,second$'Political.Party' == 'Ind,near rep' & second$'Year.School' >13)
+
+indem <- filter(second,second$'Political.Party' == 'Ind,near dem' & second$'Year.School' >13)
+
+know <- filter(second,second$'Political.Party' == "Don't know" & second$'Year.School' >11)
+
+betterEduacatied <- rbind(strongRep,strongDem)
+betterEduacatied <- rbind(betterEduacatied,other)
+betterEduacatied <- rbind(betterEduacatied,notStrRep)
+betterEduacatied <- rbind(betterEduacatied,notStrDem)
+betterEduacatied <- rbind(betterEduacatied,independent)
+betterEduacatied <- rbind(betterEduacatied,inrep)
+betterEduacatied <- rbind(betterEduacatied,indem)
+betterEduacatied <- rbind(betterEduacatied,know)
+
+betterEduacatied
+
+```
+### Colin
+
+```{r}
+education <- dat %>% 
+  select(Political.Party, Year.School) %>% 
+  drop_na %>%
+  group_by(Political.Party) %>%
+  mutate(Year.School = as.numeric(Year.School, na.rm=TRUE)) %>%
+  filter( Year.School >= median(Year.School, na.rm=TRUE))
+str(education)
+```
+
+## Question 3
+### Allan 
+```{r}
+marriage <- dat[c('Happiness','Marital.Status','Political.Party')]
+marriage <- filter(marriage, marriage$'Happiness' == 'Very happy' | marriage$'Happiness' == 'Pretty happy' | marriage$'Happiness' == 'Not too happy')
+marriage <-
+marriage <- table(marriage)
+marriage <- as.data.frame(marriage)
+
+ggplot(marriage, aes(x=Marital.Status, y=Freq)) + geom_bar(aes(fill = Happiness),stat = "identity",position = "dodge")+coord_flip()
+```
+
+3. By the look of the visual and numerically. THe overall person is happy no matter their martial status, but Looking at the married group there are a lot more people that are happy than any other group. In the numerical representation you can see more people are happy across all group, but visually you can see that a lot of people responded to being married and that they were happy.
+
+### Colin
+```{r}
+marriedData <- dat %>% select(Happiness, Marital.Status) %>% drop_na
+marriedData <- marriedData %>% filter(Marital.Status != 'No Answer' &
+                                        Marital.Status != 'No answer' &
+                                        Happiness != "Don't know" &
+                                        Happiness != "No answer" &
+                                        Happiness != 'Not applicable')
+str(marriedData)
+marriedData <- marriedData %>% mutate(Marital.Status = factor(Marital.Status, levels = c('Never married', 'Divorced', 'Seperated', 'Widowed', 'Married'))) %>%
+  arrange(Marital.Status)
+summary(marriedData)
+ggplot(marriedData, aes(x=Marital.Status, fill=Happiness)) + geom_bar(position = 'fill') + ggtitle("Marital Status vs Happiness")
+```
+The graph shows that respondents that were married had a greater portion, by a significant margin, that wer very happy versus other groups.
+
+## Question 4
+### Allan 
+```{r}
+
+partyMarriage <- dat[c('Happiness','Marital.Status','Political.Party')]
+partyMarriage <- filter(partyMarriage, partyMarriage$'Happiness' == 'Very happy' | partyMarriage$'Happiness' == 'Pretty happy' | partyMarriage$'Happiness' == 'Not too happy') 
+
+partyMarriage <- filter(partyMarriage, partyMarriage$'Political.Party' != "Don't know" | partyMarriage$'Political.Party' != "No answer")
+
+ggplot(partyMarriage, aes(partyMarriage$'Marital.Status', fill =partyMarriage$'Happiness' ))+ geom_bar(position = "dodge")+ facet_wrap(~partyMarriage$'Political.Party') +coord_flip()
+```
+
+4. Looking at this there doesnt seem to be a trend between martial status and political party they are all very simlar.
+### Colin
+```{r}
+marriedData <- dat %>% select(Happiness, Political.Party, Marital.Status) %>% drop_na
+marriedData <- marriedData %>% filter(Marital.Status != 'No Answer' &
+                                        Marital.Status != 'No answer' &
+                                        Happiness != "Don't know" &
+                                        Happiness != "No answer" &
+                                        Happiness != 'Not applicable' & 
+                                        Political.Party != "Don't know" &
+                                        Political.Party != "No answer" &
+                                        Political.Party != 'Not applicable')
+str(marriedData)
+marriedData <- marriedData %>% mutate(Marital.Status = factor(Marital.Status, levels = c('Never married', 'Divorced', 'Seperated', 'Widowed', 'Married'))) %>%
+  arrange(Marital.Status)
+summary(marriedData)
+ggplot(marriedData, aes(x=Marital.Status, fill=Happiness)) + geom_bar(position = 'fill') + facet_wrap(~marriedData$Political.Party) + theme(axis.text.x=element_text(angle=90))+ ggtitle("Political Party vs Happiness and Marital Status")
+```
+The trends for political party and marriage are fairly consistant throughout the graphs so it doesn't show any evidence that says political party has anything to do with marriage. 
+
+## Question 5
+### Allan 
+```{r}
+happy <- dat[c('Marital.Status','Year.School')]  
+
+happy <- filter(happy, happy$'Year.School' != 'No answer')
+happy <- filter(happy, happy$'Year.School' != "Don't know")
+happy <- filter(happy, happy$'Marital.Status' != "No answer")
+happy$'Year.School' <- as.numeric(happy$'Year.School')
+happy <- aggregate(happy$'Year.School',list(happy$'Marital.Status'), FUN = mean)
+happy <- happy %>% rename(party = Group.1, years = x)
+happy
+ 
+ggplot(happy, aes(x=party, y=years)) + geom_bar(stat = "identity")+coord_flip()
+```
+
+5. all the statuses are pretty similar id say there is at least a visual difference on widowed and separated apart from the rest of the groups. Numerically widowed is the lowest with 11 and divorced, married and never is hovering around 13.
+### Colin
+```{r}
+marriedData <- dat %>% select(Year.School, Marital.Status) %>% drop_na
+marriedData <- marriedData %>% filter(Marital.Status != 'No Answer' &
+                                        Marital.Status != 'No answer') %>%
+  group_by(Marital.Status)
+marriedData %>% 
+  summarise(average = mean(Year.School))
+```
+The mean education level for each group of marital status is shown above and the only real difference is the widowed group has around 2 year average lower than the other groups. One reason for this could be the older respondents were more likely to be widowed and the education level of people has gone up in recent years so the older generation didn't have as much of a need to go on past high school. With out further evidence it is hard to make any predictions or assumptions.
+
+```{r}
+marriedData <- marriedData %>% mutate(Marital.Status = factor(Marital.Status, levels = c('Never married', 'Divorced', 'Seperated', 'Widowed', 'Married'))) %>%
+  arrange(Marital.Status)
+summary(marriedData)
+ggplot(marriedData, aes(x=Marital.Status, y=Year.School)) + geom_boxplot() + ggtitle("Education vs Marital Status")
+```
+The graph above shows the relatively drastic difference when looking at widowed respondents versus the other three demographics. 
+
+## Question 6: Children, Religion and Self-employed
+
+## Children
+
+```{r}
+childrenHappiness <- dat %>% select(Happiness, Children) %>% 
+  drop_na %>%
+  filter(Happiness != "Don't know" & Happiness != "No answer" & 
+           Happiness != 'Not applicable') %>%
+  mutate(Children = factor(Children, levels = c(0, 1, 2, 3, 4, 5, 6, 7))) %>%
+  arrange(Children) 
+ggplot(childrenHappiness, aes(x=Children, fill=Happiness)) + geom_bar(position = 'fill') + ggtitle("Children vs Happiness")
+```
+First step I took was looking at the number of children vs Happiness but that turned up nothing remarkable like I was expecting. My hypothesis was that their would be a number that had more happiness to be considered the "ideal" number of children but that was not the case. It is all fairly even. So next I looked at the religoin of the respondent versus children to see if there was trend in the amount of kids per religion.
+
+```{r}
+temp <- dat %>% select(Religion) %>% unique
+religionLevels <- c('Protestant', 'Catholic', 'Other', 'Jewish', 'Christian', 'Inter-nondenominational', 'Hinduism', 'Buddhism', 'Orthodox-christian', 'Moslem/islam', 'Other eastern', 'Native american')
+childrenHappiness <- dat %>% select(Religion, Children) %>% 
+  drop_na %>%
+  filter(Religion != "Don't know" & Religion != "No answer" & 
+           Religion != 'Not applicable') %>%
+  mutate(Religion = factor(Religion, levels = religionLevels)) %>%
+  arrange(Religion) 
+ggplot(childrenHappiness, aes(x=Religion, y=Children)) + geom_boxplot() + theme(axis.text.x=element_text(angle=90))+ ggtitle("#Children vs Religoin")
+```
+The above graph shows that there is some differences with Catholics, Protestants, and Jewish respondents had the highest average and the middle chunk of religions, Christian, Inter-nondenominational, Hinduism, Buddhism and Orthodox-christian all were relatively the same. Protestant was the only, large religion, that had the range from the first quartile to third quartile not resting on 0 for number of children.
+
+## Self-Employed
+```{r}
+employed <-dat %>% select(Happiness, Self.Emp) %>% drop_na   
+employed <- filter(employed, employed$Happiness == 'Very happy' | employed$Happiness == 'Pretty happy' | employed$Happiness == 'Not too happy')
+employed <- filter(employed, employed$Self.Emp != 'No answer' )
+employed <- filter(employed, employed$Self.Emp != 'Not applicable')
+ employed <- filter(employed,employed$Self.Emp != "Don't know" )
+employed <- table(employed)
+employed <- as.data.frame(employed)
+ggplot(employed, aes(x=Self.Emp, y=Freq)) + geom_bar(aes(fill = Happiness),stat = "identity",position = "dodge")+coord_flip()
+```
+
+6. For individual we compared the happiness on the person and checked if they were unemployed or not. There didnt really seem to be any trend between them. The only real difference was the percentage of people not happy between the two. If you were employed by someone else 15 percent of people reported to be unhappy vs the 12 percent of people that were unhappy and self employed.
+
+
+### Adam Brandt
+
+1.
+
+```{r}
+by_party <- select(data, `Political party affiliation`, `Highest year of school completed`)
+by_party$`Highest year of school completed` <- as.numeric(as.character(by_party$`Highest year of school completed`))
+group_by(by_party, `Political party affiliation`) %>%
+summarise(mean_years = mean(`Highest year of school completed`, na.rm = TRUE))
+```
+
+The least educated people have no political affiliation and republicans have more average years of education.
+
+2.
+```{r}
+data$`Highest year of school completed` <- as.numeric(as.character(data$`Highest year of school completed`))
+data %>%
+  group_by(`Political party affiliation`) %>%
+  filter(`Highest year of school completed` > median(`Highest year of school completed`, na.rm = TRUE))
 ```
 
 
+3.
+```{r}
+by_marriage <- select(data, 'General happiness', 'Marital status', 'Political party affiliation')
+by_marriage <- filter(by_marriage, by_marriage$'General happiness' == 'Very happy' | by_marriage$'General happiness' == 'Pretty happy' | by_marriage$'General happiness' == 'Not too happy') 
+ggplot(by_marriage, aes(by_marriage$'Marital status', fill = by_marriage$'General happiness' ))+ geom_bar(position = "dodge")
+```
+
+Of the people that are married, most of them responded that they were happy. However, there were a lot of happy people among the other groups too, but they had higher numbers of unhappy people relative to the married people.
+
+
+4.
+```{r}
+ggplot(by_marriage, aes(by_marriage$'Marital status', fill = by_marriage$'General happiness' ))+ geom_bar(position = "dodge") + facet_wrap(~by_marriage$'Political party affiliation')
+```
+
+There does not seem to be a relationship between party affiliation and marital status.
+
+5.
+```{r}
+by_edu <- select(data, `Marital status`, `Highest year of school completed`) %>%
+          filter(`Highest year of school completed` != "No answer" & `Highest year of school completed` != "Don't know" & `Marital status` != "No answer")
+by_edu$`Highest year of school completed` <- as.numeric(as.character(by_edu$`Highest year of school completed`))
+by_edu <- aggregate(by_edu$'Highest year of school completed', list(by_edu$'Marital status'), FUN = mean)
+by_edu
+ggplot(by_edu, aes(x= Group.1, y=x)) + geom_bar(stat = "identity")
+```
+
+There seems to be more people who are married that have a higher years of education, but there is very little correlation.
+
+6.
+```{r}
+by_religion <- select(data, 'Religion in which raised', 'Political party affiliation')
+by_religion <- filter(by_religion, by_religion$'Religion in which raised' != "Not applicable")
+ggplot(by_religion, aes(by_religion$'Religion in which raised', fill = by_religion$'Political party affiliation' ))+ geom_bar(position = "dodge")
+```
+
+I compared the religion of the respondents with their political party affiliation and found that there was no correlation between the two.
+
+```{r}
+by_employed <- select(data, `R self-emp or works for somebody`, `Political party affiliation`) %>%
+  filter(`R self-emp or works for somebody` != "No answer" & `R self-emp or works for somebody` != "Don't Know")
+ggplot(by_employed, aes(by_employed$`R self-emp or works for somebody`, fill = by_employed$`Political party affiliation` ))+ geom_bar(position = "dodge")
+```
+
+I compared whether or not you work for somebody else or you work for yourself and your political party affiliation and found that democrats are more likely to work for someone else.
