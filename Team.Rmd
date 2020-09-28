@@ -72,5 +72,15 @@ The above graph shows that there is some differences with Catholics, Protestants
 ## Religion
 
 ## Self-Employed
-
+```{r}
+employed <-dat %>% select(Happiness, Self.Emp) %>% drop_na   
+employed <- filter(employed, employed$Happiness == 'Very happy' | employed$Happiness == 'Pretty happy' | employed$Happiness == 'Not too happy')
+employed <- filter(employed, employed$Self.Emp != 'No answer' )
+employed <- filter(employed, employed$Self.Emp != 'Not applicable')
+ employed <- filter(employed,employed$Self.Emp != "Don't know" )
+employed <- table(employed)
+employed <- as.data.frame(employed)
+ggplot(employed, aes(x=Self.Emp, y=Freq)) + geom_bar(aes(fill = Happiness),stat = "identity",position = "dodge")+coord_flip()
+```
+6. For individual we compared the happiness on the person and checked if they were unemployed or not. There didnt really seem to be any trend between them. The only real difference was the percentage of people not happy between the two. If you were employed by someone else 15 percent of people reported to be unhappy vs the 12 percent of people that were unhappy and self employed.
 
