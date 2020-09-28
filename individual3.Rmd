@@ -131,3 +131,5 @@ ggplot(employed, aes(x=R.self.emp.or.works.for.somebody, y=Freq)) + geom_bar(aes
 ```
 
 6. For individual we compared the happiness on the person and checked if they were unemployed or not. There didnt really seem to be any trend between them. The only real difference was the percentage of people not happy between the two. If you were employed by someone else 15 percent of people reported to be unhappy vs the 12 percent of people that were unhappy and self employed.
+
+### This lab was well done and investigated the questions well. Some ways to improve could have been making new names for the columns to avoid having to type out the long values for column names and use some of the tools in tidyverse to make things easier but other than that it was well put together. - Colin Willenborg
