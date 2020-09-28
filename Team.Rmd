@@ -11,7 +11,10 @@ library(tidyverse)
 ```
 
 ```{r}
+<<<<<<< HEAD
 data <- readxl::read_xls('./GSS.xls')
+=======
+>>>>>>> f285f6374d198f0efe67b88a8d31b5444a71c558
 dat <- readxl::read_xls('./GSS.xls')
 dat <- dat %>%
   rename(
@@ -322,5 +325,6 @@ by_employed <- select(data, `R self-emp or works for somebody`, `Political party
   filter(`R self-emp or works for somebody` != "No answer" & `R self-emp or works for somebody` != "Don't Know")
 ggplot(by_employed, aes(by_employed$`R self-emp or works for somebody`, fill = by_employed$`Political party affiliation` ))+ geom_bar(position = "dodge")
 ```
+
 
 I compared whether or not you work for somebody else or you work for yourself and your political party affiliation and found that democrats are more likely to work for someone else.
