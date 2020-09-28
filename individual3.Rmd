@@ -1,0 +1,97 @@
+---
+title: "indivdual3"
+author: "Allan Juarez"
+date: "9/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+dat <- readxl::read_xls('C:/Users/Allan Juarez/OneDrive/Documents/DS202/ds202_lab3/GSS.xls')
+summary(dat)
+library(dplyr)
+library(ggplot2)
+library(classdata)
+```
+
+```{r}
+education <- dat[c('Political party affiliation','Highest year of school completed')]  
+
+education <- filter(education, education$'Highest year of school completed' != 'No answer')
+education <- filter(education, education$'Highest year of school completed' != "Don't know")
+education$'Highest year of school completed' <- as.numeric(education$'Highest year of school completed')
+
+education <- aggregate(education$'Highest year of school completed',list(education$'Political party affiliation'), FUN = mean)
+education <- education %>% rename(party = Group.1, years = x)
+ 
+ggplot(education, aes(x=party, y=years)) + geom_bar(stat = "identity")+coord_flip()
+```
+
+1. Looking at the average years of school for every party. YOu can see that there are about three types of the two parties. Strong, Not Str, INd, in every category republicans average more years of school than democrats. The lowest average of years in school tended to not know their affiliation.
+
+```{r}
+second <-dat
+
+education <- dat[c('Political party affiliation','Highest year of school completed')] 
+education <- filter(education, education$'Highest year of school completed' != 'No answer')
+education <- filter(education, education$'Highest year of school completed' != "Don't know")
+education$'Highest year of school completed' <- as.numeric(education$'Highest year of school completed') 
+education <- aggregate(education$'Highest year of school completed',list(education$'Political party affiliation'), FUN = median)
+education
+second <- filter(second, second$'Highest year of school completed' != 'No answer')
+second <- filter(second, second$'Highest year of school completed' != "Don't know")
+
+second$'Highest year of school completed' <- as.numeric(second$'Highest year of school completed')
+strongRep <- filter(second,second$'Political party affiliation' == 'Strong republican' & second$'Highest year of school completed' >13)
+
+strongDem <- filter(second,second$'Political party affiliation' == 'Strong democrat' & second$'Highest year of school completed' >12)
+
+other <- filter(second,second$'Political party affiliation' == 'Other party' & second$'Highest year of school completed' >13)
+
+notStrRep <- filter(second,second$'Political party affiliation' == 'Not str republican' & second$'Highest year of school completed' >13)
+
+notStrDem <- filter(second,second$'Political party affiliation' == 'Not str democrat' & second$'Highest year of school completed' >12)
+
+no <- filter(second,second$'Political party affiliation' == 'No answer' & second$'Highest year of school completed' >12)
+
+independent <- filter(second,second$'Political party affiliation' == 'Independent' & second$'Highest year of school completed' >12)
+inrep <- filter(second,second$'Political party affiliation' == 'Ind,near rep' & second$'Highest year of school completed' >13)
+
+indem <- filter(second,second$'Political party affiliation' == 'Ind,near dem' & second$'Highest year of school completed' >13)
+
+know <- filter(second,second$'Political party affiliation' == "Don't know" & second$'Highest year of school completed' >11)
+
+betterEduacatied <- rbind(strongRep,strongDem)
+betterEduacatied <- rbind(betterEduacatied,other)
+betterEduacatied <- rbind(betterEduacatied,notStrRep)
+betterEduacatied <- rbind(betterEduacatied,notStrDem)
+betterEduacatied <- rbind(betterEduacatied,independent)
+betterEduacatied <- rbind(betterEduacatied,inrep)
+betterEduacatied <- rbind(betterEduacatied,indem)
+betterEduacatied <- rbind(betterEduacatied,know)
+
+betterEduacatied
+
+```
+the mean years were used from the previous question 
+```{r}
+marriage <- dat[c('General happiness','Marital status','Political party affiliation')]
+marriage <- filter(marriage, marriage$'General happiness' == 'Very happy' | marriage$'General happiness' == 'Pretty happy' | marriage$'General happiness' == 'Not too happy')
+marriage <-
+marriage <- table(marriage)
+marriage <- as.data.frame(marriage)
+
+ggplot(marriage, aes(x=Marital.status, y=Freq)) + geom_bar(aes(fill = General.happiness),stat = "identity",position = "dodge")+coord_flip()
+```
+By the look of the visual and numerically. THe overall person is happy no matter their martial status, but Looking at the married group there are a lot more people that are happy than any other group. In the numerical representation you can see more people are happy across all group, but visually you can see that a lot of people responded to being married and that they were happy. 
+
+```{r}
+
+partyMarriage <- dat[c('General happiness','Marital status','Political party affiliation')]
+partyMarriage <- filter(partyMarriage, partyMarriage$'General happiness' == 'Very happy' | partyMarriage$'Political party affiliation' == 'Pretty happy' | partyMarriage$'General happiness' == 'Not too happy') 
+partyMarriage <- filter(partyMarriage, partyMarriage$'Political party affiliation' != "Don't know" |partyMarriage$'Political party affiliation' != "No answer")
+partyMarriage
+```
