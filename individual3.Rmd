@@ -76,7 +76,7 @@ betterEduacatied <- rbind(betterEduacatied,know)
 betterEduacatied
 
 ```
-the mean years were used from the previous question 
+2. the median years were used to figure out years
 ```{r}
 marriage <- dat[c('General happiness','Marital status','Political party affiliation')]
 marriage <- filter(marriage, marriage$'General happiness' == 'Very happy' | marriage$'General happiness' == 'Pretty happy' | marriage$'General happiness' == 'Not too happy')
@@ -86,12 +86,43 @@ marriage <- as.data.frame(marriage)
 
 ggplot(marriage, aes(x=Marital.status, y=Freq)) + geom_bar(aes(fill = General.happiness),stat = "identity",position = "dodge")+coord_flip()
 ```
-By the look of the visual and numerically. THe overall person is happy no matter their martial status, but Looking at the married group there are a lot more people that are happy than any other group. In the numerical representation you can see more people are happy across all group, but visually you can see that a lot of people responded to being married and that they were happy. 
+3. By the look of the visual and numerically. THe overall person is happy no matter their martial status, but Looking at the married group there are a lot more people that are happy than any other group. In the numerical representation you can see more people are happy across all group, but visually you can see that a lot of people responded to being married and that they were happy. 
 
 ```{r}
 
 partyMarriage <- dat[c('General happiness','Marital status','Political party affiliation')]
-partyMarriage <- filter(partyMarriage, partyMarriage$'General happiness' == 'Very happy' | partyMarriage$'Political party affiliation' == 'Pretty happy' | partyMarriage$'General happiness' == 'Not too happy') 
-partyMarriage <- filter(partyMarriage, partyMarriage$'Political party affiliation' != "Don't know" |partyMarriage$'Political party affiliation' != "No answer")
-partyMarriage
+partyMarriage <- filter(partyMarriage, partyMarriage$'General happiness' == 'Very happy' | partyMarriage$'General happiness' == 'Pretty happy' | partyMarriage$'General happiness' == 'Not too happy') 
+
+partyMarriage <- filter(partyMarriage, partyMarriage$'Political party affiliation' != "Don't know" | partyMarriage$'Political party affiliation' != "No answer")
+
+ggplot(partyMarriage, aes(partyMarriage$'Marital status', fill =partyMarriage$'General happiness' ))+ geom_bar(position = "dodge")+ facet_wrap(~partyMarriage$'Political party affiliation') +coord_flip()
 ```
+4. Looking at this there doesnt seem to be a trend between martial status and political party they are all very simlar.
+
+```{r}
+happy <- dat[c('Marital status','Highest year of school completed')]  
+
+happy <- filter(happy, happy$'Highest year of school completed' != 'No answer')
+happy <- filter(happy, happy$'Highest year of school completed' != "Don't know")
+happy <- filter(happy, happy$'Marital status' != "No answer")
+happy$'Highest year of school completed' <- as.numeric(happy$'Highest year of school completed')
+happy <- aggregate(happy$'Highest year of school completed',list(happy$'Marital status'), FUN = mean)
+happy <- happy %>% rename(party = Group.1, years = x)
+happy
+ 
+ggplot(happy, aes(x=party, y=years)) + geom_bar(stat = "identity")+coord_flip()
+```
+5. all the statuses are pretty similar id say there is at least a visual difference on widowed and separated apart from the rest of the groups. Numerically widowed is the lowest with 11 and divorced, married and never is hovering around 13.
+
+```{r}
+employed <-dat[c('R self-emp or works for somebody','General happiness')]   
+employed <- filter(employed, employed$'General happiness' == 'Very happy' | employed$'General happiness' == 'Pretty happy' | employed$'General happiness' == 'Not too happy')
+employed <- filter(employed, employed$'R self-emp or works for somebody' != 'No answer' )
+employed <- filter(employed, employed$'R self-emp or works for somebody' != 'Not applicable')
+ employed <- filter(employed,employed$'R self-emp or works for somebody' != "Don't know" )
+employed <- table(employed)
+employed <- as.data.frame(employed)
+employed
+ggplot(employed, aes(x=R.self.emp.or.works.for.somebody, y=Freq)) + geom_bar(aes(fill = General.happiness),stat = "identity",position = "dodge")+coord_flip()
+```
+6. For individual we compared the happiness on the person and checked if they were unemployed or not. There didnt really seem to be any trend between them
